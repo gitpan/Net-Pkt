@@ -160,6 +160,7 @@ netpkt_tcpdump(char *dev, char *file, char *filter, int snaplen)
    struct bpf_program fcode;
    char               ebuf[PCAP_ERRBUF_SIZE];
    pcap_t            *pd;
+   pcap_dumper_t     *p;
 
    memset(ebuf, 0, sizeof ebuf);
    pd = pcap_open_live(dev, snaplen, 0, 1000, ebuf);
@@ -188,7 +189,7 @@ netpkt_tcpdump(char *dev, char *file, char *filter, int snaplen)
       return(0);
    }
 
-   pcap_dumper_t *p = pcap_dump_open(pd, file);
+   p = pcap_dump_open(pd, file);
    if (p == NULL) {
       fprintf(stderr, "%s: pcap_dump_open: %s\n", __FUNCTION__,
          pcap_geterr(pd));

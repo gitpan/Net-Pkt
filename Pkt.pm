@@ -1,7 +1,7 @@
 package Net::Pkt;
 
-# $Date: 2004/09/03 15:16:15 $
-# $Revision: 1.39.2.5 $
+# $Date: 2004/09/03 20:26:01 $
+# $Revision: 1.39.2.6 $
 
 require v5.6.1;
 
@@ -15,7 +15,7 @@ use AutoLoader;
 
 our @ISA = qw(Exporter DynaLoader);
 
-our $VERSION = '0.22';
+our $VERSION = '0.23';
 
 use Net::Pcap;
 use Net::Ifconfig::Wrapper;

@@ -1,6 +1,11 @@
 Revision history for Perl extension Net::Pkt.
 
-0.22
+0.23  Fri Sep  3 22:24:18 2004
+  - bugfix: META.yml
+  - bugfix: libnetpkt.c and Makefile.PL to let compilation work on Linux and 
+    OpenBSD
+
+0.22  Fri Sep  3 21:49:30 2004
    - LayerICMPv4: echo request/reply, timestamp request/reply, information 
      request/reply, address mask request/reply
    - constant renaming: NETPKT_IPv4_TRANSPORT_TCP => NETPKT_IPv4_PROTOCOL_TCP

@@ -1,11 +1,11 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         Net-Pkt
-version:      0.22
+version:      0.23
 version_from: Pkt.pm
 installdirs:  site
 requires:
-   Net::Ifconfig::Wrapper   0
+   Net::Ifconfig::Wrapper:  0
    Net::Pcap:               0
 
 distribution_type: module
