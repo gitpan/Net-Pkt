@@ -4,9 +4,9 @@ use warnings;
 
 use Getopt::Std;
 my %opts;
-getopts('i:s:m:n:', \%opts);
+getopts('d:I:M:n:', \%opts);
 
-die "Usage: arp-scan.pl [ -i DEV ] [ -s SRC_IP ] [ -m SRC_MAC ] -n C.SUB.NET\n"
+die "Usage: arp-scan.pl [ -d device ] [ -I srcIp ] [ -M srcMac ] -n C.SUB.NET\n"
    unless $opts{n};
 
 die "Invalid C class: $opts{n}\n" unless $opts{n} =~ /^\d+\.\d+\.\d+/;
@@ -14,9 +14,9 @@ $opts{n} =~ s/^(\d+\.\d+\.\d+).*$/$1/;
 
 $Net::Pkt::Debug++;
 
-$Net::Pkt::Dev = $opts{i};
-$Net::Pkt::Ip = $opts{s};
-$Net::Pkt::Mac = $opts{m};
+$Net::Pkt::Dev = $opts{d};
+$Net::Pkt::Ip  = $opts{I};
+$Net::Pkt::Mac = $opts{M};
 
 use Net::Pkt::DescL2;
 Net::Pkt::DescL2->new;
@@ -26,10 +26,10 @@ use Net::Pkt::Quick;
 my @frames;
 for (1..254) {
    my $frame = Net::Pkt::Quick->arpRequest(
-      whoHas    => "$opts{n}.$_",
-      tell      => $Net::Pkt::Ip,
-      tellMac   => $Net::Pkt::Mac,
-      toMac     => 'broadcast',
+      whoHas  => "$opts{n}.$_",
+      tell    => $Net::Pkt::Ip,
+      tellMac => $Net::Pkt::Mac,
+      toMac   => 'broadcast',
    );
    push @frames, $frame;
 }

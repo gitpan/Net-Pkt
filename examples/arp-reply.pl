@@ -4,16 +4,16 @@ use warnings;
 
 use Getopt::Std;
 my %opts;
-getopts('m:a:d:i:t:', \%opts);
+getopts('m:M:i:a:d:', \%opts);
 
-die "Usage: arp-reply.pl [ -i DEV ] [ -m ETH_SRC_MAC ] -t IP ".
-    "-a IS_AT_MAC [ -d DST_MAC ] (or will broadcast)\n"
-   unless $opts{t} && $opts{a};
+die "Usage: arp-reply.pl  -i dstIp -a isAtMac [ -M srcMac ] [ -m dstMac ] ".
+    "(or will broadcast) [ -d device ]\n"
+   unless $opts{i} && $opts{a};
 
 $Net::Pkt::Debug++;
 
-$Net::Pkt::Dev = $opts{i};
-$Net::Pkt::Mac = $opts{m};
+$Net::Pkt::Dev = $opts{d};
+$Net::Pkt::Mac = $opts{M};
 
 use Net::Pkt::DescL2;
 Net::Pkt::DescL2->new;
@@ -21,9 +21,9 @@ Net::Pkt::DescL2->new;
 use Net::Pkt::Quick;
 my $frame = Net::Pkt::Quick->arpReply(
    srcMac => $Net::Pkt::Mac,
-   ip     => $opts{t},
+   ip     => $opts{i},
    isAt   => $opts{a},
-   toMac  => $opts{d} ? $opts{d} : 'broadcast',
+   toMac  => $opts{m} ? $opts{m} : 'broadcast',
 );
 
 print "Sending:\n";

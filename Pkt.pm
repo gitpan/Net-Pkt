@@ -1,7 +1,7 @@
 package Net::Pkt;
 
-# $Date: 2004/08/29 19:56:49 $
-# $Revision: 1.39.2.2 $
+# $Date: 2004/09/03 15:16:15 $
+# $Revision: 1.39.2.5 $
 
 require v5.6.1;
 
@@ -15,7 +15,7 @@ use AutoLoader;
 
 our @ISA = qw(Exporter DynaLoader);
 
-our $VERSION = '0.21';
+our $VERSION = '0.22';
 
 use Net::Pcap;
 use Net::Ifconfig::Wrapper;
@@ -80,7 +80,6 @@ our $Ip;
 our $Mac;
 our $Desc;
 our $Dump;
-our $Tcpdump = "/usr/sbin/tcpdump";
 
 sub new {
    my $invocant = shift;
@@ -98,7 +97,6 @@ sub autoDev {
    my $err;
    $Dev = Net::Pcap::lookupdev(\$err);
    if (defined $err) {
-      $Dev = undef;
       croak("@{[(caller(0))[3]]}: Net::Pcap::lookupdev: $err ; ".
             "unable to autochoose Dev");
    }
@@ -134,8 +132,8 @@ sub getRandomHighPort {
    return $highPort;
 }
 
-sub getRandom32bitInt { return int rand 0xffffffff }
-sub getRandom16bitInt { return int rand 0xffff }
+sub getRandom32bitsInt { return int rand 0xffffffff }
+sub getRandom16bitsInt { return int rand 0xffff }
 
 sub convertMac {
    shift;
@@ -166,7 +164,7 @@ sub debugPrint {
    my ($invocant, $msg) = @_;
    (my $pm = ref($invocant) || $invocant) =~ s/^Net::Pkt:://;
    $msg =~ s/^/DEBUG: $pm: /gm;
-   print "$msg\n";
+   print STDERR "$msg\n";
 }
 
 sub checkParams {

@@ -1,7 +1,7 @@
 package Net::Pkt::Frame;
 
-# $Date: 2004/08/29 19:16:01 $
-# $Revision: 1.55.2.2 $
+# $Date: 2004/09/03 19:36:35 $
+# $Revision: 1.55.2.7 $
 
 use warnings;
 use strict;
@@ -17,6 +17,7 @@ our @EXPORT_OK = qw(
    NETPKT_LAYER_IPv4
    NETPKT_LAYER_TCP
    NETPKT_LAYER_UDP
+   NETPKT_LAYER_ICMPv4
    NETPKT_LAYER_7
    NETPKT_LAYER_NONE
    NETPKT_LAYER_UNKNOWN
@@ -27,6 +28,7 @@ use Net::Pkt::LayerARP;
 use Net::Pkt::LayerIPv4;
 use Net::Pkt::LayerTCP;
 use Net::Pkt::LayerUDP;
+use Net::Pkt::LayerICMPv4;
 use Net::Pkt::Layer7;
 
 use constant NETPKT_LAYER         => 'Net::Pkt::Layer';
@@ -35,6 +37,7 @@ use constant NETPKT_LAYER_ARP     => 'ARP';
 use constant NETPKT_LAYER_IPv4    => 'IPv4';
 use constant NETPKT_LAYER_TCP     => 'TCP';
 use constant NETPKT_LAYER_UDP     => 'UDP';
+use constant NETPKT_LAYER_ICMPv4  => 'ICMPv4';
 use constant NETPKT_LAYER_7       => '7';
 use constant NETPKT_LAYER_NONE    => 'NONE';
 use constant NETPKT_LAYER_UNKNOWN => 'UNKNOWN';
@@ -94,14 +97,13 @@ sub _decodeFromNetwork {
       # But here, it can be
       return undef if $self->l3->encapsulate eq NETPKT_LAYER_UNKNOWN;
 
+      # Because of some broken stacks or device driver
+      $self->_fixWithIpLen if $self->isFrameIpv4;
+
       last if $self->l3->encapsulate eq NETPKT_LAYER_NONE;
       $nextLayer = NETPKT_LAYER. $self->l3->encapsulate;
 
       $self->l4($nextLayer->new(raw => $self->l3->payload));
-
-      # Because of some broken stacks
-      $self->_fixPayload if $self->l4->is eq NETPKT_LAYER_TCP
-                         || $self->l4->is eq NETPKT_LAYER_UDP;
 
       # Here, no check; it is just raw layer 7 application data
       last if $self->l4->encapsulate eq NETPKT_LAYER_NONE;
@@ -159,19 +161,18 @@ sub _encodeToNetwork {
    return $self;
 }
 
-# Will wipe out the trailing memory disclosure found in the TCP or UDP packet
-sub _fixPayload {
+# Will wipe out the trailing memory disclosure found in the packet
+sub _fixWithIpLen {
    my $self = shift;
-   $self->l4->payloadLength(
-      $self->l3->len - $self->l4->headerLength - $self->l3->headerLength
-   );
-   $self->l4->payload(undef) unless $self->l4->payloadLength > 0;
+   my $truncated =
+      substr($self->l3->payload, 0, $self->l3->len - $self->l3->headerLength);
+   $self->l3->payload($truncated);
 }
 
 sub send {
    my $self = shift;
 
-   carp("@{[(caller(0))[3]]}: \$Net::Pkt::Desc variable not set")
+   croak("@{[(caller(0))[3]]}: \$Net::Pkt::Desc variable not set")
       unless $Net::Pkt::Desc;
 
    if ($Net::Pkt::Debug && $Net::Pkt::Debug >= 3) {
@@ -209,18 +210,21 @@ sub getFilter {
     
    # L4 filtering
    if ($self->l4) {
-      $filter .= " and" if $filter ne "";
+      $filter .= " and " if $filter;
       
       if ($self->isFrameTcp) { 
-         $filter .= " tcp and".
+         $filter .= "tcp and".
                     " src port @{[$self->tcpDst]}".
                     " and dst port @{[$self->tcpSrc]}";
       }
       elsif ($self->isFrameUdp) {
-         $filter .= " udp and".
+         $filter .= "udp and".
                     " src port @{[$self->udpDst]}".
                     " and dst port @{[$self->udpSrc]}".
                     " or icmp";
+      }
+      elsif ($self->isFrameIcmpv4) { 
+         $filter .= "icmp";
       }
    }
     
@@ -230,11 +234,11 @@ sub getFilter {
 sub recv {
    my $self = shift;
 
-   carp("@{[(caller(0))[3]]}: \$Net::Pkt::Dump variable not set")
+   croak("@{[(caller(0))[3]]}: \$Net::Pkt::Dump variable not set")
       unless $Net::Pkt::Dump;
 
    # XXX: rewrite in more Perlish
-   if ($self->isFrameTcp || $self->isFrameUdp) {
+   if ($self->isFrameTcp || $self->isFrameUdp || $self->isFrameIcmpv4) {
       return $self->l4->recv($self->l3);
    }
    elsif ($self->isFrameArp) {
@@ -244,7 +248,7 @@ sub recv {
       return $self->l7->recv(@_);
    }
    else {
-      carp("@{[(caller(0))[3]]}: not implemented for this Layer");
+      croak("@{[(caller(0))[3]]}: not implemented for this Layer");
    }
 
    return undef;
@@ -297,6 +301,11 @@ sub isFrameUdp {
    $self->_isFrame($self->l4, NETPKT_LAYER_UDP);
 }
 
+sub isFrameIcmpv4 {
+   my $self = shift;
+   $self->_isFrame($self->l4, NETPKT_LAYER_ICMPv4);
+}
+
 sub isFrame7 {
    my $self = shift;
    $self->_isFrame($self->l7, NETPKT_LAYER_7);
@@ -322,7 +331,7 @@ sub ethIsTypeArp  { shift->l2->isTypeArp  }
 # L3 helpers
 #
 
-# IP
+# IPv4
 
 sub ipPrint { shift->l3->print }
 sub ipDump  { shift->l3->dump  }
@@ -337,7 +346,7 @@ sub ipTos       { shift->l3->tos      }
 sub ipVer       { shift->l3->ver      }
 sub ipOff       { shift->l3->off      }
 sub ipChecksum  { shift->l3->checksum }
-sub ipTransport { shift->l3->protocol }
+sub ipProtocol  { shift->l3->protocol }
 sub ipSrc       { shift->l3->src      }
 sub ipDst       { shift->l3->dst      }
 sub ipTtl       { shift->l3->ttl      }
@@ -412,6 +421,26 @@ sub udpLen      { shift->l4->len      }
 sub udpChecksum { shift->l4->Checksum }
 
 #
+# ICMPv4
+#
+
+sub icmpPrint { shift->l4->print }
+sub icmpDump  { shift->l4->dump  }
+
+sub icmpHeaderLength { shift->l4->headerLength }
+sub icmpDataLength   { shift->l4->dataLength   }
+
+sub icmpType               { shift->l4->type               }
+sub icmpCode               { shift->l4->code               }
+sub icmpChecksum           { shift->l4->checksum           }
+sub icmpIdentifier         { shift->l4->identifier         }
+sub icmpSequenceNumber     { shift->l4->sequenceNumber     }
+sub icmpOriginateTimestamp { shift->l4->originateTimestamp }
+sub icmpReceiveTimestamp   { shift->l4->receiveTimestamp   }
+sub icmpTransmitTimestamp  { shift->l4->transmitTimestamp  }
+sub icmpData               { shift->l4->data               }
+
+#
 # L7 helpers
 #
 
@@ -430,11 +459,11 @@ __END__
 
 Patrice E<lt>GomoRE<gt> Auffret
 
-=head1 COPYRIGHT AND LICENCE
+=head1 COPYRIGHT AND LICENSE
 
 Copyright (c) 2004, Patrice E<lt>GomoRE<gt> Auffret
 
-You may distribute this module under the terms of the Artistic licence.
+You may distribute this module under the terms of the Artistic license.
 See Copying file in the source distribution archive.
 
 =head1 RELATED MODULES

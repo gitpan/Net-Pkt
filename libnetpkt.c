@@ -1,11 +1,12 @@
-#if defined (__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__)
-
 #include <stdio.h>
 #include <sys/types.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+
+#if defined (__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__)
+
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <net/if.h>
@@ -118,3 +119,87 @@ netpkt_open_l2(char *interface)
    return fd;
 }
 #endif /* Linux */
+
+/* All platform supporting libpcap */
+
+#include <pcap.h>
+
+struct pcap_timeval {
+   bpf_int32 tv_sec;        /* seconds */
+   bpf_int32 tv_usec;       /* microseconds */
+};
+         
+struct pcap_sf_pkthdr {
+   struct pcap_timeval ts; /* time stamp */
+   bpf_u_int32 caplen;     /* length of portion present */
+   bpf_u_int32 len;        /* length this packet (off wire) */
+}; 
+
+void
+_netpkt_pcap_dump(u_char *user, const struct pcap_pkthdr *h, const u_char *sp)
+{
+   register FILE *f;
+   struct pcap_sf_pkthdr sf_hdr;
+   
+   f = (FILE *)user;
+   sf_hdr.ts.tv_sec  = h->ts.tv_sec;
+   sf_hdr.ts.tv_usec = h->ts.tv_usec;
+   sf_hdr.caplen     = h->caplen;
+   sf_hdr.len        = h->len;
+
+   fwrite(&sf_hdr, sizeof(sf_hdr), 1, f);
+   fwrite((char *)sp, h->caplen, 1, f);
+   fflush(f);
+}
+
+int
+netpkt_tcpdump(char *dev, char *file, char *filter, int snaplen)
+{
+   bpf_u_int32        localnet;
+   bpf_u_int32        netmask;
+   struct bpf_program fcode;
+   char               ebuf[PCAP_ERRBUF_SIZE];
+   pcap_t            *pd;
+
+   memset(ebuf, 0, sizeof ebuf);
+   pd = pcap_open_live(dev, snaplen, 0, 1000, ebuf);
+   if (pd == NULL)
+      fprintf(stderr, "%s: pcap_open_live: %s\n", __FUNCTION__, ebuf);
+   else if (*ebuf)
+      fprintf(stderr, "%s: pcap_open_live: %s\n", __FUNCTION__, ebuf);
+
+   memset(ebuf, 0, sizeof ebuf);
+   if (pcap_lookupnet(dev, &localnet, &netmask, ebuf) < 0) {
+      localnet = 0;
+      netmask = 0;
+      fprintf(stderr, "%s: pcap_lookupnet: %s\n", __FUNCTION__, ebuf);
+   }
+
+   setuid(getuid());
+
+   if (pcap_compile(pd, &fcode, filter, 0, netmask) < 0) {
+      fprintf(stderr, "%s: pcap_compile: %s\n", __FUNCTION__, pcap_geterr(pd));
+      return(0);
+   }
+
+   if (pcap_setfilter(pd, &fcode) < 0) {
+      fprintf(stderr, "%s: pcap_setfilter: %s\n", __FUNCTION__,
+         pcap_geterr(pd));
+      return(0);
+   }
+
+   pcap_dumper_t *p = pcap_dump_open(pd, file);
+   if (p == NULL) {
+      fprintf(stderr, "%s: pcap_dump_open: %s\n", __FUNCTION__,
+         pcap_geterr(pd));
+      return(0);
+   }
+
+   if (pcap_loop(pd, -1, _netpkt_pcap_dump, (u_char *)p) < 0) {
+      fprintf(stderr, "%s: pcap_loop: %s\n", __FUNCTION__, pcap_geterr(pd));
+      return(0);
+   }
+
+   pcap_close(pd);
+   return(1);
+}

@@ -1,7 +1,7 @@
 package Net::Pkt::LayerETH;
 
-# $Date: 2004/08/29 19:16:01 $
-# $Revision: 1.15.2.2 $
+# $Date: 2004/09/02 16:21:10 $
+# $Revision: 1.15.2.3 $
 
 use strict;
 use warnings;
@@ -107,11 +107,11 @@ __END__
 
 Patrice E<lt>GomoRE<gt> Auffret
 
-=head1 COPYRIGHT AND LICENCE
+=head1 COPYRIGHT AND LICENSE
 
 Copyright (c) 2004, Patrice E<lt>GomoRE<gt> Auffret
 
-You may distribute this module under the terms of the Artistic licence.
+You may distribute this module under the terms of the Artistic license.
 See Copying file in the source distribution archive.
 
 =head1 RELATED MODULES

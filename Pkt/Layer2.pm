@@ -1,7 +1,7 @@
 package Net::Pkt::Layer2;
 
-# $Date: 2004/08/29 18:11:32 $
-# $Revision: 1.3 $
+# $Date: 2004/09/02 16:21:10 $
+# $Revision: 1.3.2.1 $
 
 require Net::Pkt::Layer;
 our @ISA = qw(Net::Pkt::Layer);
@@ -16,11 +16,11 @@ __END__
 
 Patrice E<lt>GomoRE<gt> Auffret
 
-=head1 COPYRIGHT AND LICENCE
+=head1 COPYRIGHT AND LICENSE
 
 Copyright (c) 2004, Patrice E<lt>GomoRE<gt> Auffret
 
-You may distribute this module under the terms of the Artistic licence.
+You may distribute this module under the terms of the Artistic license.
 See Copying file in the source distribution archive.
 
 =head1 RELATED MODULES

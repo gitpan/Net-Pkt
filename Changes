@@ -1,14 +1,32 @@
 Revision history for Perl extension Net::Pkt.
 
+0.22
+   - LayerICMPv4: echo request/reply, timestamp request/reply, information 
+     request/reply, address mask request/reply
+   - constant renaming: NETPKT_IPv4_TRANSPORT_TCP => NETPKT_IPv4_PROTOCOL_TCP
+   - constant renaming: NETPKT_IPv4_TRANSPORT_UDP => NETPKT_IPv4_PROTOCOL_UDP
+   - method renaming: getRandom32bitInt => getRandom32bitsInt
+   - method renaming: getRandom16bitInt => getRandom16bitsInt
+   - method renaming: ipTransport => ipProtocol
+   - method renaming: isTransportTcp => isProtocolTcp
+   - method renaming: isTransportUdp => isProtocolUdp
+   - Dump: removed dependance upon tcpdump binary, implemented as a C function 
+     to do its work. But it adds the need to link with libpcap on module 
+     building
+   - tcpPrint: now displays options
+   - printDebug: now go to STDERR
+   - METAL.yml written
+
 0.21  Sun Aug 29 20:20:33 2004
-        - changes in Dump scheme; now requires to call start and stop methods
-        - auto* subs do not try anymore to find values if respective class 
-          data are already set
+   - changes in Dump scheme; now requires to call start and stop methods
+   - auto* subs do not try anymore to find values if respective class
+     data are already set
+   - first public release
 
 0.20  Sun Aug 29 12:00:34 2004
-        - first release to private people
+   - first release to private people
 
 0.01  Wed Aug  4 12:16:03 2004
-	- original version; created by h2xs 1.21 with options
-		-Oxan Net::Pkt libnetpkt.h
+   - original version; created by h2xs 1.21 with options:
+      -Oxan Net::Pkt libnetpkt.h
 

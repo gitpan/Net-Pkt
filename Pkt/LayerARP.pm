@@ -1,7 +1,7 @@
 package Net::Pkt::LayerARP;
 
-# $Date: 2004/08/29 19:10:21 $
-# $Revision: 1.21.2.1 $
+# $Date: 2004/09/02 16:21:10 $
+# $Revision: 1.21.2.2 $
 
 # ARP: STD0037/RFC0826
 
@@ -173,11 +173,11 @@ __END__
 
 Patrice E<lt>GomoRE<gt> Auffret
 
-=head1 COPYRIGHT AND LICENCE
+=head1 COPYRIGHT AND LICENSE
 
 Copyright (c) 2004, Patrice E<lt>GomoRE<gt> Auffret
 
-You may distribute this module under the terms of the Artistic licence.
+You may distribute this module under the terms of the Artistic license.
 See Copying file in the source distribution archive.
 
 =head1 RELATED MODULES

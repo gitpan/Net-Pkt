@@ -4,26 +4,26 @@ use warnings;
 
 use Getopt::Std;
 my %opts;
-getopts('s:m:d:i:', \%opts);
+getopts('i:I:M:d:', \%opts);
 
-die "Usage: arp-request.pl [ -i DEV ] [ -s SRC_IP ] [ -m SRC_MAC ] -d DST_IP\n"
-   unless $opts{d};
+die "Usage: arp-request.pl -i dstIp [ -I srcIp ] [ -M srcMac ] [ -d device ]\n"
+   unless $opts{i};
 
 $Net::Pkt::Debug++;
 
-$Net::Pkt::Dev = $opts{i};
-$Net::Pkt::Ip = $opts{s};
-$Net::Pkt::Mac = $opts{m};
+$Net::Pkt::Dev = $opts{d};
+$Net::Pkt::Ip  = $opts{I};
+$Net::Pkt::Mac = $opts{M};
 
 use Net::Pkt::DescL2;
 Net::Pkt::DescL2->new;
 
 use Net::Pkt::Quick;
 my $frame = Net::Pkt::Quick->arpRequest(
-   whoHas    => $opts{d},
-   tell      => $Net::Pkt::Ip,
-   tellMac   => $Net::Pkt::Mac,
-   toMac     => 'broadcast',
+   whoHas  => $opts{i},
+   tell    => $Net::Pkt::Ip,
+   tellMac => $Net::Pkt::Mac,
+   toMac   => 'broadcast',
 );
 
 use Net::Pkt::Dump;

@@ -1,7 +1,7 @@
 package Net::Pkt::Dump;
 
-# $Date: 2004/08/29 19:16:01 $
-# $Revision: 1.37.2.1 $
+# $Date: 2004/09/03 19:41:12 $
+# $Revision: 1.37.2.6 $
 
 use strict;
 use warnings;
@@ -12,12 +12,6 @@ our @ISA = qw(Net::Pkt);
 
 use Net::Pkt::Frame;
 use Net::Pcap;
-
-CHECK {
-   croak("@{[(caller(0))[3]]}: $Net::Pkt::Tcpdump: file not found ; ".
-         "you must set the path to tcpdump using \$Net::Pkt::Tcpdump")
-      unless -f $Net::Pkt::Tcpdump;
-}
 
 our @AccessorsScalar = qw(
    file
@@ -39,7 +33,7 @@ sub new {
       @_,
    );
 
-   return $self;
+   return $Net::Pkt::Dump = $self;
 }
 
 sub start {
@@ -49,8 +43,7 @@ sub start {
    && ! $self->overwrite) {
       $self->debugPrint("`overwrite' parameter is undef, and file exists, ".
                         "we will only analyze it.");
-
-      return $Net::Pkt::Dump = $self;
+      return 1;
    }
    else {
       croak("@{[(caller(0))[3]]}: \$Net::Pkt::Dev variable not set")
@@ -60,22 +53,26 @@ sub start {
       croak("@{[(caller(0))[3]]}: fork: $!") unless defined $child;
 
       if ($child) {
-         sleep 1; # Give time to forked process to exec() correctly
+         # Waiting child process to create pcap file
+         my $count; # Just to avoid an infinite loop and report an error
+         while (! -f $self->file) { last if ++$count == 100_000_000 };
+         croak("@{[(caller(0))[3]]}: too long for netpkt_tcpdump to start")
+            if $count && $count == 100_000_000;
+
          $self->pid($child);
          $SIG{CHLD} = 'IGNORE';
-         return $Net::Pkt::Dump = $self;
+         return 1;
       }
       else {
-         $self->debugPrint("Tcpdump: [$Net::Pkt::Tcpdump]\n".
-                           "Dev:     [@{[$Net::Pkt::Dev]}]\n".
-                           "file:    [@{[$self->file]}]\n".
-                           "filter:  [@{[$self->filter]}]");
+         $self->debugPrint("file:   [@{[$self->file]}]\n".
+                           "filter: [@{[$self->filter]}]");
 
-         close STDERR unless $Net::Pkt::Debug && $Net::Pkt::Debug >= 2;
-
-         exec($Net::Pkt::Tcpdump, '-p', '-i', $Net::Pkt::Dev, '-s', 1514,
-            '-w', $self->file, $self->filter)
-               or croak("@{[(caller(0))[3]]}: exec: tcpdump: $!");
+         Net::Pkt::netpkt_tcpdump(
+            $Net::Pkt::Dev,
+            $self->file,
+            $self->filter,
+            1514,
+         ) or croak("@{[(caller(0))[3]]}: netpkt_tcpdump: $!");
       }
    }
 }
@@ -88,7 +85,6 @@ sub stop {
 
       kill('TERM', $self->pid);
       $self->pid(undef);
-      sleep 1; # Give time to forked process to be kill()ed correctly
    }
 }
 
@@ -111,8 +107,8 @@ sub analyze {
    my $err;
    $self->_pcapd(Net::Pcap::open_offline($self->file, \$err));
    unless ($self->_pcapd) {
-      carp("@{[(caller(0))[3]]}: Net::Pcap::open_offline: $err");
-      return undef;
+      croak("@{[(caller(0))[3]]}: Net::Pcap::open_offline: @{[$self->file]}: ".
+            "$err");
    }
 
    my @frames;
@@ -154,11 +150,11 @@ __END__
 
 Patrice E<lt>GomoRE<gt> Auffret
 
-=head1 COPYRIGHT AND LICENCE
+=head1 COPYRIGHT AND LICENSE
 
 Copyright (c) 2004, Patrice E<lt>GomoRE<gt> Auffret
 
-You may distribute this module under the terms of the Artistic licence.
+You may distribute this module under the terms of the Artistic license.
 See Copying file in the source distribution archive.
 
 =head1 RELATED MODULES
