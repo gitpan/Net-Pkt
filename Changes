@@ -1,5 +1,10 @@
 Revision history for Perl extension Net::Pkt.
 
+0.25 Sun Sep 26 21:20:37 2004
+   - bugfix: an error in method Net::Pkt::next was making a segfault, due to a 
+     bad typemap in Net::Pcap (FILE * to T_IN under Perl 5.8 is bad). Resolved 
+     by created my own Net::Pcap::file sub.
+
 0.24 Sun Sep 26 15:08:11 2004
   - !!! live capture ready via next sub in Net::Pkt::Dump.
     See examples/arp-scan.pl of perldoc Net::Pkt::Dump.

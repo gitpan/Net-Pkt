@@ -3,7 +3,7 @@ FreeBSD 5.2.1
 OpenBSD 3.2
 Linux 2.4 (Red Hat 7.2 with RPM updates)
 
-Net::Pkt version 0.24
+Net::Pkt version 0.25
 ====================
 
 This module is a unified framework to craft, send and receive packets at layers 
@@ -35,6 +35,8 @@ This module requires these other modules and libraries:
   libpcap
 
 LIMITATIONS
+
+Does NOT work under Microsoft Windows.
 
 If auto* subs do not work, you will need to set $Net::Pkt::Dev, $Net::Pkt::Ip, 
 $Net::Pkt::Mac globals manually for each of your Net::Pkt programs.

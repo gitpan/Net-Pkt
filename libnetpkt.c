@@ -124,6 +124,21 @@ netpkt_open_l2(char *interface)
 
 #include <pcap.h>
 
+struct pcap_sf {
+   FILE *rfile;
+   /* Incomplete struct, see pcap-int.h for completeness */
+};
+
+struct pcap {
+   int fd;
+   int snapshot;
+   int linktype;
+   int tzoff;
+   int offset;
+   struct pcap_sf sf;
+   /* Incomplete struct, see pcap-int.h for completeness */
+};
+
 struct pcap_timeval {
    bpf_int32 tv_sec;        /* seconds */
    bpf_int32 tv_usec;       /* microseconds */
@@ -134,6 +149,12 @@ struct pcap_sf_pkthdr {
    bpf_u_int32 caplen;     /* length of portion present */
    bpf_u_int32 len;        /* length this packet (off wire) */
 }; 
+
+FILE *
+netpkt_pcap_fp(pcap_t *pd)
+{
+   return(pd->sf.rfile);
+}
 
 void
 _netpkt_pcap_dump(u_char *user, const struct pcap_pkthdr *h, const u_char *sp)

@@ -207,7 +207,9 @@ sub next {
    # Open the savefile and bless it to IO::File the first time method is used
    unless ($self->_pcapd) {
       $self->_openFile || return undef;
-      $self->_pcapio(bless(Net::Pcap::file($self->_pcapd), 'IO::File'));
+      $self->_pcapio(
+         bless(Net::Pkt::netpkt_pcap_fp($self->_pcapd), 'IO::File')
+      );
    }
 
    # If it is not the first time the function is called, we setpos

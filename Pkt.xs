@@ -44,3 +44,7 @@ netpkt_tcpdump(arg0, arg1, arg2, arg3, arg4)
    char *arg2
    int   arg3
    int   arg4
+
+FILE *
+netpkt_pcap_fp(arg0)
+   pcap_t *arg0

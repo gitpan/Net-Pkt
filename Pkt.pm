@@ -15,7 +15,7 @@ use AutoLoader;
 
 our @ISA = qw(Exporter DynaLoader);
 
-our $VERSION = '0.24';
+our $VERSION = '0.25';
 
 use Net::Pcap;
 use IO::Socket::INET;

@@ -39,3 +39,4 @@ examples/syn-send.pl
 libnetpkt.c
 libnetpkt.h
 test.pl
+typemap
