@@ -1,0 +1,14 @@
+Revision history for Perl extension Net::Pkt.
+
+0.21  Sun Aug 29 20:20:33 2004
+        - changes in Dump scheme; now requires to call start and stop methods
+        - auto* subs do not try anymore to find values if respective class 
+          data are already set
+
+0.20  Sun Aug 29 12:00:34 2004
+        - first release to private people
+
+0.01  Wed Aug  4 12:16:03 2004
+	- original version; created by h2xs 1.21 with options
+		-Oxan Net::Pkt libnetpkt.h
+

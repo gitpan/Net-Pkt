@@ -1,0 +1,41 @@
+Unknown (to be implemented one day - or not):
+- make test
+- analyzeWithFilter, useful when analyzing a pcap file generated from elsewhere
+- put fixPayload in a field (memdisclosure or alike)
+- Dump->analyze should be auto-done when first access to $dump->frames
+- Desc.pm should be an IO::Handle (need to tie ?)
+- use Tie to access .pcap file ? (see Tie::MmapArray)
+- remove Net::Pcap, implemented minimal subs in C
+- put libnetpkt.c into only a .xs :)
+- overloading: print $pkt => "IP: ... TCP: ..."
+- overloading: use + overloading to ->pack each Layer into final raw
+  => LayerIP_obj + LayerTCP_OBJ
+- be able to send many packets to different dst
+- TCP reassembly
+- IP reassembly
+- be able to connect to RA (ramon et al.)
+- be able to clone a packet, and change some fields, and reAssemble all to send
+  => see $ua->clone in LWP::UserAgent
+- LayerIPv6, LayerICMPv6
+
+0.2x:
+- LayerICMPv4
+- StreamTCP.pm StreamUDP.pm Stream.pm
+- nochecksum option
+
+0.30:
+- be able to analyze packets live from network
+- open Desc in safe mode (drop priv to $USER)
+- endianness test:
+  $is_big_endian    = unpack("h*", pack("s", 1)) =~ /01/;
+  $is_little_endian = unpack("h*", pack("s", 1)) =~ /^1/;
+- better handling of tcp options
+
+0.40:
+- performances: change all occurances of ->accessor to ->{accessor} (use fields or "Pseudohashes")
+- performances: perldoc Benchmark
+- performances: use fields; ($pseudohash = fields::phash(foo => "FOO", bar => "BAR");)
+- performances: perldoc -q faster
+- performances: see file:///home/pau/ebooks/80s/books/perl2/advprog/ch08_01.htm
+  for efficient object storage
+- performances: perldoc -q memory (using substr or vec as object contant)

@@ -1,0 +1,49 @@
+Tested ok against (only x86 architectures supported for now):
+FreeBSD 5.2.1
+OpenBSD 3.2
+Linux 2.4 (Red Hat 7.2 with RPM updates)
+
+Net::Pkt version 0.20
+====================
+
+This module is a unified framework to craft, send and receive packets at layers 
+2, 3, 4 and 7 (but 4 and 7 are just here for completeness, they have not been 
+thoroughly tested. And you should use IO::Socket for layer 7, anyway).
+
+Basically, you forge each layer of a frame (Net::Pkt::LayerIPv4 for layer 3, 
+Net::Pkt::LayerTCP for layer 4 ; for example), and pack all of this into a 
+Net::Pkt::Frame object. Then, you can write it to the network, and use 
+Net::Pkt::Dump to receive responses.
+
+INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+DEPENDENCIES
+
+This module requires these other modules and libraries:
+
+  Perl v5.6.1
+  Net::Pcap
+  Net::Ifconfig::Wrapper
+
+LIMITATIONS
+
+A limitation of Net::Ifconfig::Wrapper disallows the autodetection of MAC 
+addresses under OpenBSD. You must use $Net::Pkt::Mac to set it manually.
+
+Performances (memory usage, object creation speed) maye be quite limited for 
+now. I will work on it in the near (or not) future.
+
+COPYRIGHT AND LICENCE
+
+You may distribute this module under the terms of the Artistic licence.
+See Copying file in the source distribution archive.
+
+Copyright (c) 2004, Patrice <GomoR> Auffret
+
