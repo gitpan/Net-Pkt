@@ -1,7 +1,7 @@
 package Net::Pkt::DescL2;
 
-# $Date: 2004/09/02 16:21:10 $
-# $Revision: 1.11.2.2 $
+# $Date: 2004/09/29 16:21:07 $
+# $Revision: 1.11.2.4 $
 
 use strict;
 use warnings;
@@ -15,10 +15,10 @@ use IO::Socket;
 
 BEGIN {
    my $osname = {
-      linux => '_sendLinux',
+      linux => \&_sendLinux,
    };
 
-   *send = \&{$osname->{$^O} || '_sendOther'};
+   *send = $osname->{$^O} || \&_sendOther;
 }
 
 sub new {

@@ -1,5 +1,10 @@
 Revision history for Perl extension Net::Pkt.
 
+0.26 Wed Sep 29 18:23:19 2004
+   - !!! last version of Net::Pkt. It is renamed to Net::Packet.
+   - NEW: Net::Pkt::getHostIpv4Addr()
+   - NEW: Net::Pkt::getHostIpv4Addrs()
+
 0.25 Sun Sep 26 21:20:37 2004
    - bugfix: an error in method Net::Pkt::next was making a segfault, due to a 
      bad typemap in Net::Pcap (FILE * to T_IN under Perl 5.8 is bad). Resolved 

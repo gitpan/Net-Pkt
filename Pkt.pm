@@ -1,7 +1,7 @@
 package Net::Pkt;
 
-# $Date: 2004/09/26 11:36:32 $
-# $Revision: 1.39.2.9 $
+# $Date: 2004/09/29 16:24:55 $
+# $Revision: 1.39.2.12 $
 
 require v5.6.1;
 
@@ -15,7 +15,7 @@ use AutoLoader;
 
 our @ISA = qw(Exporter DynaLoader);
 
-our $VERSION = '0.25';
+our $VERSION = '0.26';
 
 use Net::Pcap;
 use IO::Socket::INET;
@@ -31,7 +31,6 @@ BEGIN {
 
    $_UdpSocket = IO::Socket::INET->new(Proto => 'udp')
       or die("@{[(caller(0))[3]]}: IO::Socket::INET->new: $!\n");
-
 }
 
 CHECK {
@@ -135,6 +134,24 @@ sub autoMac {
    }
 
    return $Mac;
+}
+
+sub getHostIpv4Addr {
+   my $name  = shift;
+   my @addrs = (gethostbyname($name))[4];
+   @addrs
+      ? return join('.', unpack('C4', $addrs[0]))
+      : warn("@{[(caller(0))[3]]}: unable to resolv $name");
+   return undef;
+}
+
+sub getHostIpv4Addrs {
+   my $name  = shift;
+   my @addrs = (gethostbyname($name))[4];
+   @addrs
+      ? return @addrs
+      : warn("@{[(caller(0))[3]]}: unable to resolv $name");
+   return ();
 }
 
 sub getRandomHighPort {

@@ -1,7 +1,7 @@
 package Net::Pkt::LayerIPv4;
 
-# $Date: 2004/09/03 15:40:08 $
-# $Revision: 1.45.2.4 $
+# $Date: 2004/09/27 19:06:33 $
+# $Revision: 1.45.2.5 $
 
 use strict;
 use warnings;
@@ -34,11 +34,11 @@ use constant NETPKT_IPv4_RESERVED_FRAGMENT => 0x8000;
 
 BEGIN {
    my $osname = {
-      freebsd => '_fixLenBsd',
-      netbsd  => '_fixLenBsd',
+      freebsd => \&_fixLenBsd,
+      netbsd  => \&_fixLenBsd,
    };
 
-   *_fixLen = \&{$osname->{$^O} || '_fixLenOther'};
+   *_fixLen = $osname->{$^O} || \&_fixLenOther;
 
    # Some aliases
    *flags       = \&off;

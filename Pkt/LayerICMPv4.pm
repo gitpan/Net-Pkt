@@ -1,7 +1,7 @@
 package Net::Pkt::LayerICMPv4;
 
-# $Date: 2004/09/23 17:09:42 $
-# $Revision: 1.1.2.7 $
+# $Date: 2004/09/27 19:06:33 $
+# $Revision: 1.1.2.8 $
 
 use strict;
 use warnings;
@@ -160,14 +160,14 @@ sub _packAddressMask {
 }
 
 my $packTypes = {
-   NETPKT_ICMPv4_TYPE_ECHO_REQUEST()         => '_packEcho',
-   NETPKT_ICMPv4_TYPE_ECHO_REPLY()           => '_packEcho',
-   NETPKT_ICMPv4_TYPE_TIMESTAMP_REQUEST()    => '_packTimestamp',
-   NETPKT_ICMPv4_TYPE_TIMESTAMP_REPLY()      => '_packTimestamp',
-   NETPKT_ICMPv4_TYPE_INFORMATION_REQUEST()  => '_packInformation',
-   NETPKT_ICMPv4_TYPE_INFORMATION_REPLY()    => '_packInformation',
-   NETPKT_ICMPv4_TYPE_ADDRESS_MASK_REQUEST() => '_packAddressMask',
-   NETPKT_ICMPv4_TYPE_ADDRESS_MASK_REPLY()   => '_packAddressMask',
+   NETPKT_ICMPv4_TYPE_ECHO_REQUEST()         => \&_packEcho,
+   NETPKT_ICMPv4_TYPE_ECHO_REPLY()           => \&_packEcho,
+   NETPKT_ICMPv4_TYPE_TIMESTAMP_REQUEST()    => \&_packTimestamp,
+   NETPKT_ICMPv4_TYPE_TIMESTAMP_REPLY()      => \&_packTimestamp,
+   NETPKT_ICMPv4_TYPE_INFORMATION_REQUEST()  => \&_packInformation,
+   NETPKT_ICMPv4_TYPE_INFORMATION_REPLY()    => \&_packInformation,
+   NETPKT_ICMPv4_TYPE_ADDRESS_MASK_REQUEST() => \&_packAddressMask,
+   NETPKT_ICMPv4_TYPE_ADDRESS_MASK_REPLY()   => \&_packAddressMask,
 };
 
 sub pack {
@@ -181,7 +181,7 @@ sub pack {
       ),
    );
 
-   my $sub = \&{$packTypes->{$self->type} || '_packError'};
+   my $sub = $packTypes->{$self->type} || \&_packError;
    my $raw = $self->$sub;
    $raw   .= pack('a*', $self->data) if $self->data;
 
@@ -192,14 +192,14 @@ sub pack {
 }
 
 my $unpackTypes = {
-   NETPKT_ICMPv4_TYPE_ECHO_REQUEST()         => '_unpackEcho',
-   NETPKT_ICMPv4_TYPE_ECHO_REPLY()           => '_unpackEcho',
-   NETPKT_ICMPv4_TYPE_TIMESTAMP_REQUEST()    => '_unpackTimestamp',
-   NETPKT_ICMPv4_TYPE_TIMESTAMP_REPLY()      => '_unpackTimestamp',
-   NETPKT_ICMPv4_TYPE_INFORMATION_REQUEST()  => '_unpackInformation',
-   NETPKT_ICMPv4_TYPE_INFORMATION_REPLY()    => '_unpackInformation',
-   NETPKT_ICMPv4_TYPE_ADDRESS_MASK_REQUEST() => '_unpackAddressMask',
-   NETPKT_ICMPv4_TYPE_ADDRESS_MASK_REPLY()   => '_unpackAddressMask',
+   NETPKT_ICMPv4_TYPE_ECHO_REQUEST()         => \&_unpackEcho,
+   NETPKT_ICMPv4_TYPE_ECHO_REPLY()           => \&_unpackEcho,
+   NETPKT_ICMPv4_TYPE_TIMESTAMP_REQUEST()    => \&_unpackTimestamp,
+   NETPKT_ICMPv4_TYPE_TIMESTAMP_REPLY()      => \&_unpackTimestamp,
+   NETPKT_ICMPv4_TYPE_INFORMATION_REQUEST()  => \&_unpackInformation,
+   NETPKT_ICMPv4_TYPE_INFORMATION_REPLY()    => \&_unpackInformation,
+   NETPKT_ICMPv4_TYPE_ADDRESS_MASK_REQUEST() => \&_unpackAddressMask,
+   NETPKT_ICMPv4_TYPE_ADDRESS_MASK_REPLY()   => \&_unpackAddressMask,
 };
 
 sub _unpackError {
@@ -255,7 +255,7 @@ sub unpack {
    $self->payload($payload);
 
    # unpack specific ICMPv4 types
-   my $sub = \&{$unpackTypes->{$self->type} || '_unpackError'};
+   my $sub = $unpackTypes->{$self->type} || \&_unpackError;
    my $href = $self->$sub;
    $self->$_($href->{$_}) for keys %$href;
 
@@ -299,7 +299,7 @@ sub computeLengths {
 sub computeChecksums {
    my $self = shift;
 
-   my $sub = \&{$packTypes->{$self->type} || '_packError'};
+   my $sub = $packTypes->{$self->type} || \&_packError;
    my $raw = $self->$sub;
    $raw   .= CORE::pack('a*', $self->data) if $self->data;
 

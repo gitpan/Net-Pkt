@@ -22,7 +22,7 @@ my $desc = Net::Pkt::DescL3->new(ipDst => $opts{i});
 use Net::Pkt::Quick;
 my $frame = Net::Pkt::Quick->tcpSyn(
    ipSrc   => $Net::Pkt::Ip,
-   ipDst   => $opts{i},
+   ipDst   => Net::Pkt::getHostIpv4Addr($opts{i}),
    dstPort => $opts{p},
 );
 

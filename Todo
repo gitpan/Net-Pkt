@@ -29,6 +29,7 @@ Unknown (to be implemented one day - or not):
 - LayerICMPv4 to continue
 
 0.30:
+- rename Quick to Simple
 - unlinkAfterAnalyze default to 1
 - callStart default to 1
 - auto creation of DescL\d

@@ -3,7 +3,7 @@ FreeBSD 5.2.1
 OpenBSD 3.2
 Linux 2.4 (Red Hat 7.2 with RPM updates)
 
-Net::Pkt version 0.25
+Net::Pkt version 0.26
 ====================
 
 This module is a unified framework to craft, send and receive packets at layers 
