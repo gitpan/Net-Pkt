@@ -1,18 +1,19 @@
 For next version:
+- print pcap stats on DESTROY in debug mode
+- ICMPv4 other types
+- handle the padding correctly (withIpLen in Frame)
 
 Unknown (to be implemented one day - or not):
-- headerLength should be called layerLength
+- headerLength should be called layerLength (or length)
 - open Desc in safe mode (drop priv to $USER)
-- remove Net::Pcap dependance ? we already must include -lpcap, so ...
 - make test
 - analyzeWithFilter, useful when analyzing a pcap file generated from elsewhere
 - Dump->analyze should be auto-done when first access to $dump->frames
 - Desc.pm should be an IO::Handle (need to tie ?)
-- use Tie to access .pcap file ? (see Tie::MmapArray)
 - put libnetpkt.c into only a .xs :)
 - overloading: print $pkt => "IP: ... TCP: ..."
 - overloading: use + overloading to ->pack each Layer into final raw
-  => LayerIP_obj + LayerTCP_OBJ
+  => LayerIP_obj + LayerTCP_obj
 - be able to send many packets to different dst
 - TCP reassembly
 - IP reassembly
@@ -21,17 +22,26 @@ Unknown (to be implemented one day - or not):
   => see $ua->clone in LWP::UserAgent
 - LayerIPv6, LayerICMPv6
 - nochecksum option
-- better handling of ip and tcp options
+- better handling of IP and TCP options
 
 0.2x:
 - Quick made hping-like
 - LayerICMPv4 to continue
 
 0.30:
-- be able to analyze packets live from network
+- unlinkAfterAnalyze default to 1
+- callStart default to 1
 - auto creation of DescL\d
   => ipDst in IPv4 should be taken from DescL3 ipDst
   => nodesc in Frame avoids the auto creation of DescL\d
+- recv using in live mode made even easier:
+  my $frame = NEW;
+  $frame->send;
+  $frame->recvLoop { # Loop or via a flag in Frame creation ?
+     until ($Net::Pkt::Timeout)
+     ...
+  }
+- rename LayerPROTO to PROTO only
 - StreamTCP.pm StreamUDP.pm Stream.pm
 - endianness test:
   $is_big_endian    = unpack("h*", pack("s", 1)) =~ /01/;

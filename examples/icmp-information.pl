@@ -6,7 +6,7 @@ use Getopt::Std;
 my %opts;
 getopts('i:I:d:v', \%opts);
 
-die "Usage: icmp-information.pl -i dstIp [ -I srcIp ] [ -d device ]\n"
+die "Usage: icmp-information.pl -i dstIp [ -I srcIp ] [ -d device ] [ -v ]\n"
    unless $opts{i};
 
 $Net::Pkt::Debug = 3 if $opts{v};
@@ -37,15 +37,15 @@ use Net::Pkt::Dump;
 my $dump = Net::Pkt::Dump->new(
    filter             => $frame->getFilter,
    unlinkAfterAnalyze => 1,
+   callStart          => 1,
 );
-
-$dump->start;
 
 $frame->send;
 
-$dump->stop;
-
-$dump->analyze;
-if (my $reply = $frame->recv) {
-   $reply->l4->print;
+until ($Net::Pkt::Timeout) {
+   if ($dump->next && $frame->recv) {
+      print "Reply:\n";
+      $frame->reply->icmpPrint;
+      last;
+   }
 }

@@ -34,6 +34,7 @@ examples/icmp-echo.pl
 examples/icmp-information.pl
 examples/icmp-mask.pl
 examples/icmp-timestamp.pl
+examples/sniffer.pl
 examples/syn-send.pl
 libnetpkt.c
 libnetpkt.h

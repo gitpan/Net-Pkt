@@ -4,8 +4,9 @@ WriteMakefile (
    NAME          => 'Net::Pkt',
    VERSION_FROM  => 'Pkt.pm',
    PREREQ_PM     => {
-      Net::Ifconfig::Wrapper => 0,
-      Net::Pcap              => 0.04,
+      Time::HiRes   => 0,
+      IO::Interface => 0,
+      Net::Pcap     => 0.04,
    },
    ABSTRACT_FROM => 'Pkt.pm',
    AUTHOR        => 'GomoR <Net-Pkt@gomor.org>',

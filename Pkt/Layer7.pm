@@ -1,7 +1,7 @@
 package Net::Pkt::Layer7;
 
-# $Date: 2004/09/02 16:21:10 $
-# $Revision: 1.11.2.2 $
+# $Date: 2004/09/20 21:26:11 $
+# $Revision: 1.11.2.3 $
 
 use strict;
 use warnings;
@@ -106,7 +106,8 @@ sub dump {
 
 sub print {
    my $self = shift;
-   print "@{[$self->layer]}:+@{[$self->is]}: @{[$self->data]}\n";
+   print "@{[$self->layer]}:+@{[$self->is]}: ".
+         "@{[CORE::unpack('H*', $self->data)]}\n";
 }
 
 for my $a (@AccessorsScalar) {

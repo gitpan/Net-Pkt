@@ -1,7 +1,7 @@
 package Net::Pkt::LayerARP;
 
-# $Date: 2004/09/02 16:21:10 $
-# $Revision: 1.21.2.2 $
+# $Date: 2004/09/26 11:35:05 $
+# $Revision: 1.21.2.3 $
 
 # ARP: STD0037/RFC0826
 
@@ -163,6 +163,22 @@ sub print {
 for my $a (@AccessorsScalar) {
    no strict 'refs';
    *$a = sub { shift->_AccessorScalar($a, @_) }
+}
+
+#
+# Helpers
+#
+
+sub isRequest {
+   shift->opCode == NETPKT_ARP_OPCODE_REQUEST
+      ? return 1
+      : return 0;
+}
+
+sub isReply {
+   shift->opCode == NETPKT_ARP_OPCODE_REPLY
+      ? return 1
+      : return 0;
 }
 
 1;

@@ -40,15 +40,15 @@ use Net::Pkt::Dump;
 my $dump = Net::Pkt::Dump->new(
    filter             => $frame->getFilter,
    unlinkAfterAnalyze => 1,
+   callStart          => 1,
 );
-
-$dump->start;
 
 $frame->send;
 
-$dump->stop;
-
-$dump->analyze;
-if (my $reply = $frame->recv) {
-   $reply->l4->print;
+until ($Net::Pkt::Timeout) {
+   if ($dump->next && $frame->recv) {
+      print "Reply:\n";
+      $frame->reply->icmpPrint;
+      last;
+   }
 }

@@ -1,7 +1,7 @@
 package Net::Pkt::LayerICMPv4;
 
-# $Date: 2004/09/03 19:36:57 $
-# $Revision: 1.1.2.6 $
+# $Date: 2004/09/23 17:09:42 $
+# $Revision: 1.1.2.7 $
 
 use strict;
 use warnings;
@@ -130,7 +130,8 @@ sub recv {
 }
 
 sub _packError {
-   croak("@{[(caller(0))[3]]}: unknown ICMPv4 type: @{[shift->type]}");
+   warn("@{[(caller(0))[3]]}: unknown ICMPv4 type: @{[shift->type]}\n");
+   return undef;
 }
 
 sub _packEcho {
@@ -202,7 +203,8 @@ my $unpackTypes = {
 };
 
 sub _unpackError {
-   croak("@{[(caller(0))[3]]}: unknown ICMPv4 type: @{[shift->type]}");
+   warn("@{[(caller(0))[3]]}: unknown ICMPv4 type: @{[shift->type]}\n");
+   return undef;
 }
 
 sub _unpackEcho {

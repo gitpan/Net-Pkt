@@ -1,5 +1,27 @@
 Revision history for Perl extension Net::Pkt.
 
+0.24 Sun Sep 26 15:08:11 2004
+  - !!! live capture ready via next sub in Net::Pkt::Dump.
+    See examples/arp-scan.pl of perldoc Net::Pkt::Dump.
+  - Net::Ifconfig::Wrapper: removed, now uses IO::Interface which is better 
+    (but not perfect, so there remains the need for a wrapper around ifconfig 
+    on some systems)
+  - NEW: Net::Pkt::LayerARP: isReply
+  - NEW: Net::Pkt::LayerARP: isRequest
+  - Net::Pkt::Frame: new object data: reply to store the frame received on 
+    a recv method call
+  - NEW: Net::Pkt::Dump->next: returns next available frame from savefile
+  - Net::Pkt::Dump->analyze: returns empty array if there is nothing to read 
+    in savefile
+  - Net::Pkt::Dump->analyze: now returns @frames if some have been analyzed
+  - Net::Pkt::Dump: added a global to set sniffing in promiscuous mode
+    => $Net::Pkt::Promisc, default to 0.
+  - Net::Pkt::Dump: signal to handle DESTROY cleanly when hiting CTRL+C
+  - Net::Pkt::Dump: documentation
+  - Net::Pkt::Dump->new: callStart option (default 0)
+  - Net::Pkt::LayerUDP->print: also prints payload size
+  - Net::Pkt::LayerICMPv4: do not exit when an ICMP message is not yet known
+
 0.23  Fri Sep  3 22:24:18 2004
   - bugfix: META.yml
   - bugfix: libnetpkt.c and Makefile.PL to let compilation work on Linux and 

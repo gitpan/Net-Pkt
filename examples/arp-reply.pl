@@ -4,13 +4,13 @@ use warnings;
 
 use Getopt::Std;
 my %opts;
-getopts('m:M:i:a:d:', \%opts);
+getopts('m:M:i:a:d:v', \%opts);
 
 die "Usage: arp-reply.pl  -i dstIp -a isAtMac [ -M srcMac ] [ -m dstMac ] ".
-    "(or will broadcast) [ -d device ]\n"
+    "(or will broadcast) [ -d device ] [ -v ]\n"
    unless $opts{i} && $opts{a};
 
-$Net::Pkt::Debug++;
+$Net::Pkt::Debug = 3 if $opts{v};
 
 $Net::Pkt::Dev = $opts{d};
 $Net::Pkt::Mac = $opts{M};

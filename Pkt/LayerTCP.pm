@@ -1,7 +1,7 @@
 package Net::Pkt::LayerTCP;
 
-# $Date: 2004/09/03 15:37:50 $
-# $Revision: 1.46.2.4 $
+# $Date: 2004/09/20 21:25:51 $
+# $Revision: 1.46.2.5 $
 
 use strict;
 use warnings;
@@ -219,8 +219,7 @@ sub print {
    printf
       "$l:+$i: seq:0x%.8x  win:%d  [%d => %d]\n".
       "$l: $i: ack:0x%.8x  flags:0x%.2x  urp:0x%.4x  checksum:0x%.4x\n".
-      "$l: $i: size:%d  header:%d  optionsSize:%d\n".
-      "$l: $i: options:%s\n",
+      "$l: $i: size:%d  header:%d  optionsSize:%d\n",
          $self->seq,
          $self->win,
          $self->src,
@@ -232,8 +231,9 @@ sub print {
          $self->headerLength,
          NETPKT_TCP_HDR_LEN,
          $self->optionsLength,
-         CORE::unpack('H*', $self->options),
    ;
+   printf "$l: $i: options:%s\n", CORE::unpack('H*', $self->options)
+      if $self->optionsLength;
 }
 
 #

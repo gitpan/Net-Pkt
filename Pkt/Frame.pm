@@ -1,7 +1,7 @@
 package Net::Pkt::Frame;
 
-# $Date: 2004/09/03 19:36:35 $
-# $Revision: 1.55.2.7 $
+# $Date: 2004/09/26 12:45:22 $
+# $Revision: 1.55.2.10 $
 
 use warnings;
 use strict;
@@ -51,6 +51,8 @@ use constant NETPKT_L_UNKNOWN => 'L?';
 BEGIN {
    # Some aliases
    *ipFlags = \&ipOff;
+   *l3Print = \&ipPrint;
+   *l4Print = \&tcpPrint;
 }
 
 our @AccessorsScalar = qw(
@@ -62,6 +64,7 @@ our @AccessorsScalar = qw(
    rawLength
    payload
    payloadLength
+   reply
 );
 
 sub new {
@@ -234,18 +237,21 @@ sub getFilter {
 sub recv {
    my $self = shift;
 
+   # We already have the reply
+   return undef if $self->reply;
+
    croak("@{[(caller(0))[3]]}: \$Net::Pkt::Dump variable not set")
       unless $Net::Pkt::Dump;
 
    # XXX: rewrite in more Perlish
    if ($self->isFrameTcp || $self->isFrameUdp || $self->isFrameIcmpv4) {
-      return $self->l4->recv($self->l3);
+      return $self->reply($self->l4->recv($self->l3));
    }
    elsif ($self->isFrameArp) {
-      return $self->l3->recv;
+      return $self->reply($self->l3->recv);
    }
    elsif ($self->isFrame7) {
-      return $self->l7->recv(@_);
+      return $self->reply($self->l7->recv(@_));
    }
    else {
       croak("@{[(caller(0))[3]]}: not implemented for this Layer");
@@ -373,6 +379,9 @@ sub arpDst     { shift->l3->dst     }
 sub arpSrcIp   { shift->l3->srcIp   }
 sub arpDstIp   { shift->l3->dstIp   }
 sub arpPadding { shift->l3->padding }
+
+sub arpIsReply   { shift->l3->isReply   }
+sub arpIsRequest { shift->l3->isRequest }
 
 #
 # L4 helpers

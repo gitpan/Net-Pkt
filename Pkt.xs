@@ -38,8 +38,9 @@ netpkt_open_l2(arg0)
    char * arg0
 
 int
-netpkt_tcpdump(arg0, arg1, arg2, arg3)
+netpkt_tcpdump(arg0, arg1, arg2, arg3, arg4)
    char *arg0
    char *arg1
    char *arg2
    int   arg3
+   int   arg4

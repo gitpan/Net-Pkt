@@ -1,7 +1,7 @@
 package Net::Pkt::LayerUDP;
 
-# $Date: 2004/09/03 15:37:50 $
-# $Revision: 1.6.2.5 $
+# $Date: 2004/09/20 21:25:00 $
+# $Revision: 1.6.2.6 $
 
 use strict;
 use warnings;
@@ -148,12 +148,13 @@ sub print {
    my $l = $self->layer;
    printf
       "$l:+$i: checksum:0x%.4x  [%d => %d]\n".
-      "$l: $i: size:%d  header:%d\n",
+      "$l: $i: size:%d  header:%d  payload:%d\n",
          $self->checksum,
          $self->src,
          $self->dst,
          $self->len,
          NETPKT_UDP_HDR_LEN,
+         $self->len - NETPKT_UDP_HDR_LEN,
    ;
 }
 

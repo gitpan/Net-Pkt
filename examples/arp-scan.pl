@@ -4,15 +4,16 @@ use warnings;
 
 use Getopt::Std;
 my %opts;
-getopts('d:I:M:n:', \%opts);
+getopts('d:I:M:n:vt:', \%opts);
 
-die "Usage: arp-scan.pl [ -d device ] [ -I srcIp ] [ -M srcMac ] -n C.SUB.NET\n"
+die "Usage: arp-scan.pl [ -d device ] [ -I srcIp ] [ -M srcMac ] [ -v ] ".
+    "[ -t timeout ] -n C.SUB.NET\n"
    unless $opts{n};
 
 die "Invalid C class: $opts{n}\n" unless $opts{n} =~ /^\d+\.\d+\.\d+/;
 $opts{n} =~ s/^(\d+\.\d+\.\d+).*$/$1/;
 
-$Net::Pkt::Debug++;
+$Net::Pkt::Debug = 3 if $opts{v};
 
 $Net::Pkt::Dev = $opts{d};
 $Net::Pkt::Ip  = $opts{I};
@@ -38,23 +39,27 @@ use Net::Pkt::Dump;
 my $dump = Net::Pkt::Dump->new(
    filter             => "arp",
    unlinkAfterAnalyze => 1,
+   callStart          => 1,
+   timeoutOnNext      => $opts{t} ? $opts{t} : 5,
 );
 
-$dump->start;
+$_->send for @frames;
 
-$frames[$_ - 1]->send for 1..254;
-
-$dump->stop;
-
-$dump->analyze;
-my @replies;
-for (1..254) {
-   my $reply = $frames[$_ - 1]->recv;
-   next unless $reply;
-   print "Reply:\n";
-   push @replies, $reply;
-   $reply->ethPrint;
-   $reply->arpPrint;
+until ($Net::Pkt::Timeout) {
+   # If a new packet has been received, and it is an ARP reply, we try to see 
+   # if it is a response to one of our requests
+   if ($dump->next && $dump->nextFrame->arpIsReply) {
+      for (@frames) {
+         next if $_->reply; # Already received the reply, so skip
+         if (my $reply = $_->recv) {
+            print "Reply:\n";
+            $reply->ethPrint;
+            $reply->arpPrint;
+         }
+      }
+   }
 }
 
-print $_->arpSrcIp, " => ", $_->arpSrc, "\n" for @replies;
+for (@frames) {
+   print $_->reply->arpSrcIp, " => ", $_->reply->arpSrc, "\n" if $_->reply;
+}

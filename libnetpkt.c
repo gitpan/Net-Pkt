@@ -153,7 +153,7 @@ _netpkt_pcap_dump(u_char *user, const struct pcap_pkthdr *h, const u_char *sp)
 }
 
 int
-netpkt_tcpdump(char *dev, char *file, char *filter, int snaplen)
+netpkt_tcpdump(char *dev, char *file, char *filter, int snaplen, int promisc)
 {
    bpf_u_int32        localnet;
    bpf_u_int32        netmask;
@@ -163,7 +163,7 @@ netpkt_tcpdump(char *dev, char *file, char *filter, int snaplen)
    pcap_dumper_t     *p;
 
    memset(ebuf, 0, sizeof ebuf);
-   pd = pcap_open_live(dev, snaplen, 0, 1000, ebuf);
+   pd = pcap_open_live(dev, snaplen, promisc, 1000, ebuf);
    if (pd == NULL)
       fprintf(stderr, "%s: pcap_open_live: %s\n", __FUNCTION__, ebuf);
    else if (*ebuf)

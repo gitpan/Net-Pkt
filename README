@@ -3,7 +3,7 @@ FreeBSD 5.2.1
 OpenBSD 3.2
 Linux 2.4 (Red Hat 7.2 with RPM updates)
 
-Net::Pkt version 0.20
+Net::Pkt version 0.24
 ====================
 
 This module is a unified framework to craft, send and receive packets at layers 
@@ -30,18 +30,17 @@ This module requires these other modules and libraries:
 
   Perl v5.6.1
   Net::Pcap
-  Net::Ifconfig::Wrapper
+  IO::Interface
+  Time::HiRes
   libpcap
 
 LIMITATIONS
 
-A limitation of Net::Ifconfig::Wrapper disallows the autodetection of MAC 
-addresses under OpenBSD. You must use $Net::Pkt::Mac to set it manually.
+If auto* subs do not work, you will need to set $Net::Pkt::Dev, $Net::Pkt::Ip, 
+$Net::Pkt::Mac globals manually for each of your Net::Pkt programs.
 
 Performances (memory usage, object creation speed) maye be quite limited for 
 now. I will work on it in the near (or not) future.
-
-For now, no real-time packet capture and response possible.
 
 COPYRIGHT AND LICENSE
 

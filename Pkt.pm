@@ -1,7 +1,7 @@
 package Net::Pkt;
 
-# $Date: 2004/09/03 20:26:01 $
-# $Revision: 1.39.2.6 $
+# $Date: 2004/09/26 11:36:32 $
+# $Revision: 1.39.2.9 $
 
 require v5.6.1;
 
@@ -15,21 +15,23 @@ use AutoLoader;
 
 our @ISA = qw(Exporter DynaLoader);
 
-our $VERSION = '0.23';
+our $VERSION = '0.24';
 
 use Net::Pcap;
-use Net::Ifconfig::Wrapper;
+use IO::Socket::INET;
+use IO::Interface;
 
-our $_IfconfigInfo;
+our $_UdpSocket;
 
 BEGIN {
-   croak("Must be EUID 0 to use Net::Pkt") if $>;
+   die("Must be EUID 0 to use Net::Pkt") if $>;
 
-   croak("Big endian architectures not supported yet")
+   die("Big endian architectures not supported yet")
       if unpack("h*", pack("s", 1)) =~ /01/;
 
-   $_IfconfigInfo = Net::Ifconfig::Wrapper::Ifconfig('list', '', '', '')
-      or croak("Unable to get Net::Ifconfig::Wrapper::Ifconfig infos");
+   $_UdpSocket = IO::Socket::INET->new(Proto => 'udp')
+      or die("@{[(caller(0))[3]]}: IO::Socket::INET->new: $!\n");
+
 }
 
 CHECK {
@@ -80,6 +82,8 @@ our $Ip;
 our $Mac;
 our $Desc;
 our $Dump;
+our $Promisc = 0;
+our $Timeout = 0;
 
 sub new {
    my $invocant = shift;
@@ -100,30 +104,37 @@ sub autoDev {
       croak("@{[(caller(0))[3]]}: Net::Pcap::lookupdev: $err ; ".
             "unable to autochoose Dev");
    }
+
    return $Dev;
 }
 
 sub autoIp {
    return $Ip if $Ip;
 
-   if ($_IfconfigInfo->{$Dev} && $_IfconfigInfo->{$Dev}{inet}) {
-      return $Ip = (keys %{$_IfconfigInfo->{$Dev}{inet}})[0];
-   }
-   else {
-      croak("@{[(caller(0))[3]]}: unable to autochoose Ip from $Dev");
-   }
+   $Ip = $_UdpSocket->if_addr($Dev)
+      or croak("@{[(caller(0))[3]]}: unable to autochoose IP from $Dev");
+
    return $Ip;
+}
+
+sub _ifconfigGetMac {
+   return undef unless $Dev =~ /^[a-z]+[0-9]+$/;
+   my $buf = `/sbin/ifconfig $Dev 2> /dev/null`;
+   $buf =~ /([0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2})/i;
+   $1 ? return lc($1)
+      : return 'ff:ff:ff:ff:ff:ff';
 }
 
 sub autoMac {
    return $Mac if $Mac;
 
-   if ($_IfconfigInfo->{$Dev} && $_IfconfigInfo->{$Dev}{ether}) {
-      return $Mac = lc $_IfconfigInfo->{$Dev}{ether};
-   }
-   else {
+   # On some systems, if_hwaddr simply does not work, we try to get MAC from 
+   # `ifconfig $Dev`
+   unless ($Mac = $_UdpSocket->if_hwaddr($Dev) || _ifconfigGetMac()) {
       croak("@{[(caller(0))[3]]}: unable to autochoose Mac from $Dev");
    }
+
+   return $Mac;
 }
 
 sub getRandomHighPort {
@@ -225,51 +236,46 @@ __END__
 
 Net::Pkt - a unified framework to read and write packets over networks from layer 2 to layer 7
 
-=head1 CLASSES HIERARCHY
+=head1 CLASS HIERARCHY
 
   Net::Pkt
-  +
-  |
-  +-> Net::Pkt::Dump
-  |
-  +-> Net::Pkt::Desc
-  |   +
-  |   |
-  |   +-> Net::Pkt::DescL2
-  |   |
-  |   +-> Net::Pkt::DescL3
-  |   |
-  |   +-> Net::Pkt::DescL4
-  |   |
-  |   +-> Net::Pkt::DescL7
-  |
-  +-> Net::Pkt::Frame
-      +
-      |
-      +-> Net::Pkt::Layer
-          +
-          |
-          +-> Net::Pkt::Layer2
-          |   +
-          |   |
-          |   +-> Net::Pkt::LayerETH
-          |
-          +-> Net::Pkt::Layer3
-          |   +
-          |   |
-          |   +-> Net::Pkt::LayerARP
-          |   |
-          |   +-> Net::Pkt::LayerIPv4
-          |
-          +-> Net::Pkt::Layer4
-          |   +
-          |   |
-          |   +-> Net::Pkt::LayerTCP
-          |   |
-          |   +-> Net::Pkt::LayerUDP
-          |
-          +-> Net::Pkt::Layer7
-
+     |
+     +---Net::Pkt::Dump
+     |
+     +---Net::Pkt::Desc
+     |      |
+     |      +---Net::Pkt::DescL2
+     |      |
+     |      +---Net::Pkt::DescL3
+     |      |
+     |      +---Net::Pkt::DescL4
+     |      |
+     |      +---Net::Pkt::DescL7
+     |
+     +---Net::Pkt::Frame
+            |
+            +---Net::Pkt::Layer
+                   |
+                   +---Net::Pkt::Layer2
+                   |      |
+                   |      +---Net::Pkt::LayerETH
+                   |
+                   +---Net::Pkt::Layer3
+                   |      |
+                   |      +---Net::Pkt::LayerARP
+                   |      |
+                   |      +---Net::Pkt::LayerIPv4
+                   |
+                   +---Net::Pkt::Layer4
+                   |      |
+                   |      +---Net::Pkt::LayerTCP
+                   |      |
+                   |      +---Net::Pkt::LayerUDP
+                   |      |
+                   |      +---Net::Pkt::LayerICMPv4
+                   |
+                   +---Net::Pkt::Layer7
+   
   Net::Pkt::Quick
 
 =head1 DESCRIPTION
